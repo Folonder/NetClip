@@ -1,13 +1,22 @@
+from fastapi import APIRouter
+from pydantic import BaseModel
+from startup import clipboard_transfer
 from app.service.message_model import MessageModel
-from startup import app
+
+router = APIRouter()
 
 
-class FastAPIClient:
-    def __init__(self, messages: list[MessageModel]):
-        self.__messages = messages
+class MessageList(BaseModel):
+    messages: list[MessageModel]
 
-    @app.post("/post_message")
-    def post_messages(self, message):
-        # TODO: parse request body into MessageModel
-        # TODO: add messages to ClipboardTransfer
-        pass
+
+@router.post("/post_messages")
+def post_messages(messages: MessageList):
+    print(messages)
+    clipboard_transfer.remote_messages.extend(messages.messages)
+    print(*clipboard_transfer.remote_messages)
+    return {'Ok': 'successful'}
+
+
+def configure_endpoints(app):
+    app.include_router(router)
