@@ -1,10 +1,14 @@
 from app.service.message_model import MessageModel
 
 
-class ClipboardTransfer:
+class Clipboard:
     def __init__(self):
-        __messages: list[MessageModel] = []
-
-    def get_messages(self) -> list[MessageModel]:
         pass
 
+    def paste_messages(self):
+        # TODO: paste message into local clipboard
+        pass
+
+    def get_messages(self) -> list[MessageModel]:
+        # TODO: get messages from local clipboard
+        pass

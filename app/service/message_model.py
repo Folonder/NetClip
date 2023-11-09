@@ -1,2 +1,8 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class MessageModel:
-    pass
+    sender: str
+    receiver: str
+    data: str
