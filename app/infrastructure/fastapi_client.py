@@ -11,7 +11,3 @@ class FastAPIClient:
         # TODO: parse request body into MessageModel
         # TODO: add messages to ClipboardTransfer
         pass
-
-    def send_messages(self, messages: list[MessageModel]):
-        # use requests
-        pass
