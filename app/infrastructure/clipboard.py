@@ -5,7 +5,7 @@ class Clipboard:
     def __init__(self):
         pass
 
-    def paste_messages(self):
+    def paste_messages(self, messages: list[MessageModel]):
         # TODO: paste message into local clipboard
         pass
 
