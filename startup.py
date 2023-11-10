@@ -7,6 +7,7 @@ from app.infrastructure.requests_client import RequestsClient
 from app.service.clipboard_transfer import ClipboardTransfer
 from app.service.message_model import MessageModel
 
+
 app = FastAPI()
 clipboard_transfer = ClipboardTransfer(RequestsClient(), Clipboard())
 current_port = 8000
