@@ -18,6 +18,3 @@ class ClipboardTransfer:
 
     def paste_messages(self, messages: list[MessageModel]):
         self.__clipboard.paste_messages(messages)
-
-    def get_ips(self) -> list[str]:
-        pass
