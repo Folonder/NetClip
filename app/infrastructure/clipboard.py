@@ -11,13 +11,11 @@ class Clipboard:
         pass
 
     def paste_messages(self, messages: list[MessageModel]):
-        # TODO: paste message into local clipboard
         for message in messages:
             copy(message.data)
             sleep(0.25)
 
     def get_messages(self) -> list[MessageModel]:
-        # TODO: get messages from local clipboard
         command = "app/other/SharpClipHistory.exe"
 
         result = run(command, capture_output=True, text=True, encoding='cp866')
