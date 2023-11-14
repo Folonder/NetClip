@@ -1,20 +1,13 @@
 import uvicorn
 from fastapi import FastAPI
-from pydantic import BaseModel
 
-from app.infrastructure.clipboard import Clipboard
-from app.infrastructure.requests_client import RequestsClient
 from app.service.clipboard_transfer import ClipboardTransfer
-from app.service.message_model import MessageModel
+from app.service.message_model import MessageList
 from app.utils import get_local_ip, run_with_admin_rights, run_powershell_script
 
 application = FastAPI()
-clipboard_transfer = ClipboardTransfer(RequestsClient(), Clipboard())
+clipboard_transfer = ClipboardTransfer()
 PORT = 8000
-
-
-class MessageList(BaseModel):
-    messages: list[MessageModel]
 
 
 @application.post("/messages")

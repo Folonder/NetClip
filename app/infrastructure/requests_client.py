@@ -3,7 +3,8 @@ import requests
 
 
 class RequestsClient:
-    def send_messages(self, messages: list[MessageModel]):
+    @staticmethod
+    def send_messages(messages: list[MessageModel]):
         url = f"http://{messages[0].receiver}:8000/messages"
 
         headers = {
@@ -14,5 +15,3 @@ class RequestsClient:
 
         response = requests.post(url, headers=headers, json=data)
 
-        print(response.status_code)
-        print(response.json())
