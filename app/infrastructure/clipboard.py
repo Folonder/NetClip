@@ -1,9 +1,10 @@
+from re import findall, DOTALL
+from subprocess import run
 from time import sleep
-from app.service.message_model import MessageModel
+
 from pyperclip import copy
 
-from subprocess import run
-from re import findall, DOTALL
+from app.service.message_model import MessageModel
 
 
 class Clipboard:
@@ -13,7 +14,7 @@ class Clipboard:
     def paste_messages(self, messages: list[MessageModel]):
         for message in messages:
             copy(message.data)
-            sleep(0.25)
+            sleep(0.5)
 
     def get_messages(self) -> list[MessageModel]:
         command = "app/other/SharpClipHistory.exe"

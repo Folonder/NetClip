@@ -4,7 +4,7 @@ import requests
 
 class RequestsClient:
     def send_messages(self, messages: list[MessageModel]):
-        url = "http://local/post_messages"
+        url = f"http://{messages[0].receiver}:8000/messages"
 
         headers = {
             "Content-Type": "application/json",
@@ -16,13 +16,3 @@ class RequestsClient:
 
         print(response.status_code)
         print(response.json())
-
-    @staticmethod
-    def get_available_port():
-        i = 8000
-        try:
-            while i < 9000:
-                response = requests.get(f"http://localhost:{i}/get-port")
-                i += 1
-        except Exception as ex:
-            return i
