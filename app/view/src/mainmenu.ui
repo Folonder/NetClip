@@ -112,6 +112,16 @@
                    <layout class="QHBoxLayout" name="horizontalLayout_3">
                     <item>
                      <widget class="QPushButton" name="updateButton">
+                      <property name="font">
+                       <font>
+                        <pointsize>14</pointsize>
+                       </font>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">border: 1px solid black;
+border-radius: 10px;
+</string>
+                      </property>
                       <property name="text">
                        <string>Обновить</string>
                       </property>
@@ -119,8 +129,18 @@
                     </item>
                     <item>
                      <widget class="QComboBox" name="comboBox">
+                      <property name="font">
+                       <font>
+                        <pointsize>14</pointsize>
+                       </font>
+                      </property>
                       <property name="cursor">
                        <cursorShape>PointingHandCursor</cursorShape>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">border: 1px solid black;
+
+</string>
                       </property>
                       <item>
                        <property name="text">
@@ -156,7 +176,9 @@
                        <cursorShape>PointingHandCursor</cursorShape>
                       </property>
                       <property name="styleSheet">
-                       <string notr="true">color: black</string>
+                       <string notr="true">border: 1px solid black;
+ border-radius: 10px;
+</string>
                       </property>
                       <property name="text">
                        <string>Отправить</string>

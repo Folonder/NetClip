@@ -41,7 +41,8 @@ class View(QMainWindow):
             layout.addLayout(widget)
 
     def generate_message_widget(self, message):
-        label = QLabel(message)
+        formatted_text = "\n".join([message[i:i + 50] for i in range(0, len(message), 50)])
+        label = QLabel(formatted_text)
         checkbox = QCheckBox()
 
         layout = QHBoxLayout()
