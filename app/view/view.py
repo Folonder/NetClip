@@ -126,13 +126,13 @@ class View(QMainWindow):
         return checked_messages
 
     def get_receiver_ip(self):
-        with open ('app/view/src/ip.txt', 'r') as file:
+        with open('app/view/src/ip.txt', 'r') as file:
             lines = file.readlines()
             for line in lines:
                 ip = line.strip().split(" ")
                 if ip[0] == "*":
                     return ip[1]
-        return "127.0.0.1"
+        return get_local_ip()
 
     def get_checked_checkboxes_indexes(self, messages_widgets):
         checked_checkboxes_indexes = []
