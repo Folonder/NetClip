@@ -117,9 +117,6 @@
     height: 150px; /* Set the width of tabs as desired */
 }</string>
         </property>
-        <property name="currentIndex">
-         <number>1</number>
-        </property>
         <widget class="QWidget" name="sendTab">
          <attribute name="title">
           <string>Отправить</string>

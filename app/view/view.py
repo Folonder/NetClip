@@ -21,8 +21,7 @@ class View(QMainWindow):
         self.tabWidget.tabBar().setDocumentMode(True)
         self.tabWidget.tabBar().setExpanding(True)
 
-        self.ipLabel.setText("Ваш IP-адрес \n" + get_local_ip())
-        self.ipLabel.setStyleSheet("color: white")
+        self.update_ip()
 
         self.updateGetTabButton.setFont(font)
         self.updateSendTabButton.setFont(font)
@@ -38,6 +37,11 @@ class View(QMainWindow):
         self.getButton.clicked.connect(self.receive_messages)
         self.tabWidget.currentChanged.connect(self.tab_changed)
 
+        self.update_local_messages_view()
+
+    def update_ip(self):
+        self.ipLabel.setText("Ваш IP-адрес \n" + get_local_ip())
+        self.ipLabel.setStyleSheet("color: white")
 
     def open_ip_manager(self):
         ip_manager = IPManager()
@@ -50,6 +54,7 @@ class View(QMainWindow):
             self.update_remote_messages_view()
 
     def update_local_messages_view(self):
+        self.update_ip()
         if self.sendVerticalLayout.takeAt(0) and self.sendVerticalLayout.count() != 0:
             self.sendVerticalLayout.takeAt(0).widget().deleteLater()
         self.update_local_messages_widgets()
@@ -58,6 +63,7 @@ class View(QMainWindow):
         self.show_widget_messages(layout, self.__local_messages_widgets)
 
     def update_remote_messages_view(self):
+        self.update_ip()
         if self.getVerticalLayout.takeAt(0) and self.getVerticalLayout.count() != 0:
             self.getVerticalLayout.takeAt(0).widget().deleteLater()
         self.update_remote_messages_widgets()
