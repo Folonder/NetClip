@@ -23,6 +23,7 @@ class View(QMainWindow):
 
         self.ipLabel.setText("Ваш IP-адрес \n" + get_local_ip())
         self.ipLabel.setStyleSheet("color: white")
+        self.ipLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         self.updateGetTabButton.setFont(font)
         self.updateSendTabButton.setFont(font)
@@ -38,6 +39,7 @@ class View(QMainWindow):
         self.getButton.clicked.connect(self.receive_messages)
         self.tabWidget.currentChanged.connect(self.tab_changed)
 
+        self.update_local_messages_view()
 
     def open_ip_manager(self):
         ip_manager = IPManager()
