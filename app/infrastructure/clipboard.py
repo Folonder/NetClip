@@ -22,4 +22,4 @@ class Clipboard:
     def get_messages() -> list[MessageModel]:
         result = run("app/other/SharpClipHistory.exe", capture_output=True, text=True, encoding='cp866')
         matches = findall(r'\[\+] (.*?)(?=\[\+]|$)', result.stdout, DOTALL)
-        return [MessageModel(get_local_ip(), None, match[20:].strip('\n')) for match in matches[2:]]
+        return [MessageModel(get_local_ip(), None, match[21:].strip('\n')) for match in matches[2:]]

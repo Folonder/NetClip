@@ -1,11 +1,15 @@
+import time
+
+import keyboard
 from PyQt5 import uic
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QMainWindow, QScrollArea, QWidget, QVBoxLayout, \
     QLabel, QCheckBox, QHBoxLayout, QInputDialog, QListWidgetItem, QDialog
 from app.view.src.css import *
 from app.service.clipboard_transfer import ClipboardTransfer
 from app.utils import get_local_ip
+
 
 class View(QMainWindow):
     def __init__(self, clipboard_transfer: ClipboardTransfer):
@@ -16,6 +20,13 @@ class View(QMainWindow):
         uic.loadUi(r"app/view/src/mainmenu.ui", self)
         self.init_ui()
 
+        self.keyboard_thread = KeyboardThread()
+        self.keyboard_thread.key_pressed.connect(self.on_key_pressed)
+        self.keyboard_thread.start()
+
+    def on_key_pressed(self, message):
+        time.sleep(0.5)
+        self.update_local_messages_view()
 
     def init_ui(self):
         self.tabWidget.tabBar().setDocumentMode(True)
@@ -55,7 +66,7 @@ class View(QMainWindow):
 
     def update_local_messages_view(self):
         self.update_ip()
-        if self.sendVerticalLayout.takeAt(0) and self.sendVerticalLayout.count() != 0:
+        if self.sendVerticalLayout.count() != 0:
             self.sendVerticalLayout.takeAt(0).widget().deleteLater()
         self.update_local_messages_widgets()
         scroll_area, layout = self.create_widget_layout()
@@ -64,7 +75,7 @@ class View(QMainWindow):
 
     def update_remote_messages_view(self):
         self.update_ip()
-        if self.getVerticalLayout.takeAt(0) and self.getVerticalLayout.count() != 0:
+        if self.getVerticalLayout.count() != 0:
             self.getVerticalLayout.takeAt(0).widget().deleteLater()
         self.update_remote_messages_widgets()
         scroll_area, layout = self.create_widget_layout()
@@ -171,6 +182,17 @@ class View(QMainWindow):
     #     self.__widget_messages = []
     #     for i, message in enumerate(self.__clipboard_transfer.get_remote_messages()):
     #         self.__widget_messages.append(self.generate_message_widget(message.data, i))
+
+class KeyboardThread(QThread):
+    key_pressed = pyqtSignal(str)
+
+    def run(self):
+        keyboard.hook(self.on_key_event)
+
+    def on_key_event(self, event):
+        if event.event_type == keyboard.KEY_DOWN and event.name == 'c' and keyboard.is_pressed('ctrl'):
+            self.key_pressed.emit("Ctrl+C pressed")
+
 
 
 class IPManager(QDialog):
