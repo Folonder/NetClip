@@ -1,13 +1,13 @@
 from dataclasses import dataclass
-
+from ip_model import IpModel
 from pydantic import BaseModel
 
 
 @dataclass
 class MessageModel:
-    sender: str
-    receiver: str
-    data: str
+    sender: IpModel
+    receiver: IpModel
+    content: str
 
 
 class MessageList(BaseModel):

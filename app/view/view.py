@@ -85,12 +85,12 @@ class View(QMainWindow):
     def update_local_messages_widgets(self):
         self.__local_messages_widgets = []
         for i, message in enumerate(self.__clipboard_transfer.get_local_messages()):
-            self.__local_messages_widgets.append(self.generate_message_widget(message.data, i))
+            self.__local_messages_widgets.append(self.generate_message_widget(message.content, i))
 
     def update_remote_messages_widgets(self):
         self.__remote_messages_widgets = []
         for i, message in enumerate(self.__clipboard_transfer.get_remote_messages()):
-            self.__remote_messages_widgets.append(self.generate_message_widget(message.data, i))
+            self.__remote_messages_widgets.append(self.generate_message_widget(message.content, i))
 
     def create_widget_layout(self):
         scroll_area = QScrollArea(self)
@@ -256,6 +256,7 @@ class IPManager(QDialog):
         if selected_item and index_main_item == -1:
             selected_item[0].setForeground(QColor("red"))
             selected_item[0].setText("* " + selected_item[0].text())
+
         else:
             item = self.ipList.item(index_main_item)
             item.setText(item.text().split(" ")[1])

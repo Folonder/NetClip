@@ -15,7 +15,7 @@ class Clipboard:
     @staticmethod
     def paste_messages(messages: list[MessageModel]):
         for message in messages:
-            copy(message.data)
+            copy(message.content)
             sleep(0.5)
 
     @staticmethod
