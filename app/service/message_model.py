@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ip_model import IpModel
+from app.service.ip_model  import IpModel
 from pydantic import BaseModel
 
 

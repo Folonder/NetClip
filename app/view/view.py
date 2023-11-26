@@ -1,15 +1,15 @@
 import time
-
+import socket
 import keyboard
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QMainWindow, QScrollArea, QWidget, QVBoxLayout, \
-    QLabel, QCheckBox, QHBoxLayout, QInputDialog, QListWidgetItem, QDialog
+    QLabel, QCheckBox, QHBoxLayout, QInputDialog, QListWidgetItem, QDialog, QMessageBox
 from app.view.src.css import *
 from app.service.clipboard_transfer import ClipboardTransfer
 from app.utils import get_local_ip
-
+from app.service.ip_model import IpModel
 
 class View(QMainWindow):
     def __init__(self, clipboard_transfer: ClipboardTransfer):
@@ -209,12 +209,15 @@ class IPManager(QDialog):
 
     def add_ip(self):
         ip_text, ok = QInputDialog.getText(self, 'Добавить IP', 'Введите IP:')
-        if ok and ip_text:
-            item = QListWidgetItem(ip_text)
-            if not self.check_item_in_list(item):  # Если элемента нет списке
-                self.ipList.addItem(item)
-        # Каждый раз сэйв при добавлении ip
-        self.save_to_file()
+        if ip_text:
+            if ok and self.valid_ip(ip_text):
+                item = QListWidgetItem(ip_text)
+                if not self.check_item_in_list(item):  # Если элемента нет списке
+                    self.ipList.addItem(item)
+            else:
+                QMessageBox.critical(self, 'Validation Failed', "IP-адрес введен неверно!")
+            # Каждый раз сэйв при добавлении ip
+            self.save_to_file()
 
     def delete_ip(self):
         selected = self.ipList.currentRow()
@@ -225,13 +228,18 @@ class IPManager(QDialog):
     def edit_ip(self):
         selected = self.ipList.currentRow()
         if selected >= 0:
+            current_text = self.ipList.item(selected).text()
+            current_ip = current_text.split(' ', 1)[-1].strip()
             new_text, ok = QInputDialog.getText(self, 'Редактировать IP', 'Введите новый IP:',
-                                                text=self.ipList.item(selected).text())
-            if ok and new_text:
-                item = QListWidgetItem(new_text)
-                if (not self.check_item_in_list(item)):
-                    self.ipList.item(selected).setText(new_text)
-                    self.save_to_file()
+                                                text=current_ip)
+            if new_text:
+                if ok and self.valid_ip(new_text):
+                    item = QListWidgetItem(new_text)
+                    if (not self.check_item_in_list(item)):
+                        self.ipList.item(selected).setText(new_text)
+                        self.save_to_file()
+                else:
+                    QMessageBox.critical(self, 'Validation Failed', "IP-адрес введен неверно!")
 
     def save_to_file(self):
         file_path = 'app/view/src/ip.txt'
@@ -256,7 +264,7 @@ class IPManager(QDialog):
         if selected_item and index_main_item == -1:
             selected_item[0].setForeground(QColor("red"))
             selected_item[0].setText("* " + selected_item[0].text())
-
+            selected_item[0].setBackground(QColor(135, 206, 250))
         else:
             item = self.ipList.item(index_main_item)
             item.setText(item.text().split(" ")[1])
@@ -275,3 +283,12 @@ class IPManager(QDialog):
             if self.ipList.item(i).text().split(" ")[0] == "*":
                 return i
         return -1
+
+    def valid_ip(self, address):
+        try:
+            host_bytes = address.split('.')
+            valid = [int(b) for b in host_bytes]
+            valid = [b for b in valid if b >= 0 and b <= 255]
+            return len(host_bytes) == 4 and len(valid) == 4
+        except:
+            return False
