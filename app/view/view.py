@@ -2,10 +2,12 @@ import time
 
 import keyboard
 from PyQt5 import uic
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QByteArray
+from PyQt5.QtGui import QColor, QImage, QPixmap
 from PyQt5.QtWidgets import QMainWindow, QScrollArea, QWidget, QVBoxLayout, \
     QLabel, QCheckBox, QHBoxLayout, QInputDialog, QListWidgetItem, QDialog
+
+from app.service.message_model import MessageModel
 from app.view.src.css import *
 from app.service.clipboard_transfer import ClipboardTransfer
 from app.utils import get_local_ip
@@ -85,12 +87,12 @@ class View(QMainWindow):
     def update_local_messages_widgets(self):
         self.__local_messages_widgets = []
         for i, message in enumerate(self.__clipboard_transfer.get_local_messages()):
-            self.__local_messages_widgets.append(self.generate_message_widget(message.data, i))
+            self.__local_messages_widgets.append(self.generate_message_widget(message, i))
 
     def update_remote_messages_widgets(self):
         self.__remote_messages_widgets = []
         for i, message in enumerate(self.__clipboard_transfer.get_remote_messages()):
-            self.__remote_messages_widgets.append(self.generate_message_widget(message.data, i))
+            self.__remote_messages_widgets.append(self.generate_message_widget(message, i))
 
     def create_widget_layout(self):
         scroll_area = QScrollArea(self)
@@ -106,16 +108,26 @@ class View(QMainWindow):
         for widget in messages_widgets:
             layout.addWidget(widget)
 
-
     def send_messages(self):
         return self.__clipboard_transfer.post_messages(self.send_local_checked_messages())
 
     def receive_messages(self):
         return self.__clipboard_transfer.paste_messages(self.get_remote_checked_messages())
 
-    def generate_message_widget(self, message, index):
-        formatted_text = self.format_text(message)
-        label = QLabel(formatted_text)
+    def generate_message_widget(self, message:MessageModel, index):
+
+        label = QLabel()
+        if message.content_type == 'text':
+            formatted_text = self.format_text(message.content.decode('utf-8'))
+            label.setText(formatted_text)
+        else:
+            img = QImage()
+            img.loadFromData(QByteArray(message.content))
+            label.setPixmap(QPixmap.fromImage(img).scaled(450, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+
+        # self.label10.setPixmap(QPixmap.fromImage(img))
+
         checkbox = QCheckBox()
         checkbox.setObjectName("checkBox_" + str(index))
 
@@ -177,11 +189,6 @@ class View(QMainWindow):
 
         return "\n".join(formatted_lines)
 
-
-    # def update_remote_messages_widgets(self):
-    #     self.__widget_messages = []
-    #     for i, message in enumerate(self.__clipboard_transfer.get_remote_messages()):
-    #         self.__widget_messages.append(self.generate_message_widget(message.data, i))
 
 class KeyboardThread(QThread):
     key_pressed = pyqtSignal(str)

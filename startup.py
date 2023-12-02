@@ -1,3 +1,4 @@
+import base64
 import sys
 import threading
 
@@ -6,7 +7,7 @@ from fastapi import FastAPI
 from uvicorn import run
 
 from app.service.clipboard_transfer import ClipboardTransfer
-from app.service.message_model import MessageList
+from app.service.message_model import MessageList, MessageModel, NetMessageList
 from app.utils import get_local_ip, run_with_admin_rights, run_powershell_script
 from app.view.view import View
 
@@ -15,9 +16,30 @@ clipboard_transfer = ClipboardTransfer()
 
 
 @application.post("/messages")
-def post_messages(messages: MessageList):
-    clipboard_transfer.remote_messages.extend(messages.messages)
+def post_messages(messages: NetMessageList):
+    decoded_messages = [
+        MessageModel(
+            sender=msg.sender,
+            receiver=msg.receiver,
+            content=msg.content.encode('cp866'),
+            content_type=msg.content_type
+        )
+        for msg in messages.messages
+    ]
+
+    clipboard_transfer.remote_messages.extend(decoded_messages)
     return {'Ok': 'successful'}
+
+def my_exception_hook(exctype, value, traceback):
+    # Print the error and traceback
+    print(exctype, value, traceback)
+    # Call the normal Exception hook after
+    sys._excepthook(exctype, value, traceback)
+    sys.exit(1)
+
+
+# Set the exception hook to our wrapping function
+sys.excepthook = my_exception_hook
 
 
 def run_server():
