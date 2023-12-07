@@ -1,8 +1,9 @@
 import base64
 
-from requests import post
+from requests import post, exceptions
 
 from app.service.message_model import MessageModel
+
 
 
 class RequestsClient:
@@ -15,7 +16,8 @@ class RequestsClient:
 
         data = {"messages": [RequestsClient.to_dict(message) for message in messages]}
 
-        response = post(f"http://{messages[0].receiver}:8000/messages", headers=headers, json=data)
+        response = post(f"http://{messages[0].receiver}:8000/messages", headers=headers, json=data, timeout=3)
+
 
     @staticmethod
     def to_dict(message: MessageModel):

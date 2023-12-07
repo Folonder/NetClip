@@ -1,11 +1,12 @@
 import time
 
 import keyboard
+import requests.exceptions
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QByteArray
 from PyQt5.QtGui import QColor, QImage, QPixmap
 from PyQt5.QtWidgets import QMainWindow, QScrollArea, QWidget, QVBoxLayout, \
-    QLabel, QCheckBox, QHBoxLayout, QInputDialog, QListWidgetItem, QDialog
+    QLabel, QCheckBox, QHBoxLayout, QInputDialog, QListWidgetItem, QDialog, QMessageBox
 
 from app.service.message_model import MessageModel
 from app.view.src.css import *
@@ -109,7 +110,13 @@ class View(QMainWindow):
             layout.addWidget(widget)
 
     def send_messages(self):
-        return self.__clipboard_transfer.post_messages(self.send_local_checked_messages())
+        try:
+            return self.__clipboard_transfer.post_messages(self.send_local_checked_messages())
+        except requests.exceptions.Timeout as e:
+            print(f"Request time out: {e}")
+            self.show_timeout_alert()
+        except requests.RequestException as e:
+            print(f"Request exception: {e}")
 
     def receive_messages(self):
         return self.__clipboard_transfer.paste_messages(self.get_remote_checked_messages())
@@ -189,6 +196,14 @@ class View(QMainWindow):
 
         return "\n".join(formatted_lines)
 
+    def show_timeout_alert(self):
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Ошибка")
+        msg_box.setIcon(QMessageBox.Critical)
+        msg_box.setText("Неверный IP.")
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec_()
+
 
 class KeyboardThread(QThread):
     key_pressed = pyqtSignal(str)
@@ -212,7 +227,6 @@ class IPManager(QDialog):
         self.addButton.clicked.connect(self.add_ip)
         self.deleteButton.clicked.connect(self.delete_ip)
         self.changeButton.clicked.connect(self.edit_ip)
-
 
     def add_ip(self):
         ip_text, ok = QInputDialog.getText(self, 'Добавить IP', 'Введите IP:')
