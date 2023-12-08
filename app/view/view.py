@@ -1,3 +1,4 @@
+import json
 import time
 import socket
 import keyboard
@@ -5,11 +6,14 @@ from PyQt5 import uic
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QMainWindow, QScrollArea, QWidget, QVBoxLayout, \
-    QLabel, QCheckBox, QHBoxLayout, QInputDialog, QListWidgetItem, QDialog, QMessageBox
+    QLabel, QCheckBox, QHBoxLayout, QInputDialog, QListWidgetItem, QDialog, QMessageBox, QLineEdit, QListWidget, \
+    QPushButton, QFormLayout, QDialogButtonBox, QTableWidgetItem, QButtonGroup, QRadioButton
+
 from app.view.src.css import *
 from app.service.clipboard_transfer import ClipboardTransfer
 from app.utils import get_local_ip
 from app.service.ip_model import IpModel
+
 
 class View(QMainWindow):
     def __init__(self, clipboard_transfer: ClipboardTransfer):
@@ -50,13 +54,13 @@ class View(QMainWindow):
 
         self.update_local_messages_view()
 
-    def update_ip(self):
-        self.ipLabel.setText("Ваш IP-адрес \n" + get_local_ip())
-        self.ipLabel.setStyleSheet("color: white")
-
     def open_ip_manager(self):
         ip_manager = IPManager()
         ip_manager.exec_()
+
+    def update_ip(self):
+        self.ipLabel.setText("Ваш IP-адрес \n" + get_local_ip())
+        self.ipLabel.setStyleSheet("color: white")
 
     def tab_changed(self, index):
         if index == 0:
@@ -106,7 +110,6 @@ class View(QMainWindow):
         for widget in messages_widgets:
             layout.addWidget(widget)
 
-
     def send_messages(self):
         return self.__clipboard_transfer.post_messages(self.send_local_checked_messages())
 
@@ -143,12 +146,15 @@ class View(QMainWindow):
         return checked_messages
 
     def get_receiver_ip(self):
-        with open('app/view/src/ip.txt', 'r') as file:
-            lines = file.readlines()
-            for line in lines:
-                ip = line.strip().split(" ")
-                if ip[0] == "*":
-                    return ip[1]
+        with open('app/view/src/ip.json', 'r') as file:
+            data = json.load(file)
+
+            for item in data:
+                ip = item['IP']
+                alias = item['Alias']
+                is_main = item['Main']
+                if is_main:
+                    return ip
         return get_local_ip()
 
     def get_checked_checkboxes_indexes(self, messages_widgets):
@@ -178,11 +184,6 @@ class View(QMainWindow):
         return "\n".join(formatted_lines)
 
 
-    # def update_remote_messages_widgets(self):
-    #     self.__widget_messages = []
-    #     for i, message in enumerate(self.__clipboard_transfer.get_remote_messages()):
-    #         self.__widget_messages.append(self.generate_message_widget(message.data, i))
-
 class KeyboardThread(QThread):
     key_pressed = pyqtSignal(str)
 
@@ -194,95 +195,37 @@ class KeyboardThread(QThread):
             self.key_pressed.emit("Ctrl+C pressed")
 
 
+class AddIpWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('app/view/src/add_ip_window.ui', self)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self);
+
+        layout = QFormLayout(self)
+        layout.addWidget(buttonBox)
+        self.verticalLayout.addLayout(layout)
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+
+
+    def get_inputs(self):
+        return self.ipLineEdit.text(), self.aliasLineEdit.text()
+
+    def set_inputs(self, ip, alias):
+        self.ipLineEdit.setText(ip)
+        self.aliasLineEdit.setText(alias)
+
 
 class IPManager(QDialog):
-    def __init__(self, parent=None):
-        super(IPManager, self).__init__(parent)
+    def __init__(self):
+        super(IPManager, self).__init__()
         uic.loadUi('app/view/src/ip_window.ui', self)
-        self.seed_ip_manager()
-
-        self.markButton.clicked.connect(self.mark_main_ip)
-        self.addButton.clicked.connect(self.add_ip)
+        self.main_button_group = QButtonGroup()
+        self.read_data_from_file()
+        self.addButton.clicked.connect(self.open_add_ip_window)
         self.deleteButton.clicked.connect(self.delete_ip)
-        self.changeButton.clicked.connect(self.edit_ip)
-
-
-    def add_ip(self):
-        ip_text, ok = QInputDialog.getText(self, 'Добавить IP', 'Введите IP:')
-        if ip_text:
-            if ok and self.valid_ip(ip_text):
-                item = QListWidgetItem(ip_text)
-                if not self.check_item_in_list(item):  # Если элемента нет списке
-                    self.ipList.addItem(item)
-            else:
-                QMessageBox.critical(self, 'Validation Failed', "IP-адрес введен неверно!")
-            # Каждый раз сэйв при добавлении ip
-            self.save_to_file()
-
-    def delete_ip(self):
-        selected = self.ipList.currentRow()
-        if selected >= 0:
-            self.ipList.takeItem(selected)
-        self.save_to_file()
-
-    def edit_ip(self):
-        selected = self.ipList.currentRow()
-        if selected >= 0:
-            current_text = self.ipList.item(selected).text()
-            current_ip = current_text.split(' ', 1)[-1].strip()
-            new_text, ok = QInputDialog.getText(self, 'Редактировать IP', 'Введите новый IP:',
-                                                text=current_ip)
-            if new_text:
-                if ok and self.valid_ip(new_text):
-                    item = QListWidgetItem(new_text)
-                    if (not self.check_item_in_list(item)):
-                        self.ipList.item(selected).setText(new_text)
-                        self.save_to_file()
-                else:
-                    QMessageBox.critical(self, 'Validation Failed', "IP-адрес введен неверно!")
-
-    def save_to_file(self):
-        file_path = 'app/view/src/ip.txt'
-        with open(file_path, 'w') as file:
-                for index in range(self.ipList.count()):
-                    item = self.ipList.item(index)
-                    file.write(f"{item.text()}\n")
-
-    def seed_ip_manager(self):
-        file_path = 'app/view/src/ip.txt'
-        with open(file_path, 'r') as file:
-            lines = file.readlines()
-            for line in lines:
-                item = QListWidgetItem(line.strip())
-                if item.text().split(" ")[0] == "*":
-                    item.setForeground(QColor("red"))
-                self.ipList.addItem(item)
-
-    def mark_main_ip(self):
-        selected_item = self.ipList.selectedItems()
-        index_main_item = self.check_main_item()
-        if selected_item and index_main_item == -1:
-            selected_item[0].setForeground(QColor("red"))
-            selected_item[0].setText("* " + selected_item[0].text())
-            selected_item[0].setBackground(QColor(135, 206, 250))
-        else:
-            item = self.ipList.item(index_main_item)
-            item.setText(item.text().split(" ")[1])
-            item.setForeground(QColor("black"))
-            self.mark_main_ip()
-        self.save_to_file()
-
-    def check_item_in_list(self, item):
-        for i in range(self.ipList.count()):
-            if self.ipList.item(i).text() == item.text():
-                return True
-        return False
-
-    def check_main_item(self):
-        for i in range(self.ipList.count()):
-            if self.ipList.item(i).text().split(" ")[0] == "*":
-                return i
-        return -1
+        self.main_button_group.buttonClicked.connect(self.save_data_to_file)
+        self.changeButton.clicked.connect(self.open_edit_ip_window)
 
     def valid_ip(self, address):
         try:
@@ -292,3 +235,97 @@ class IPManager(QDialog):
             return len(host_bytes) == 4 and len(valid) == 4
         except:
             return False
+
+    def read_data_from_file(self):
+        file_path = 'app/view/src/ip.json'
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+
+        for item in data:
+            ip = item['IP']
+            alias = item['Alias']
+            is_main = item['Main']
+
+            row_position = self.ipList.rowCount()
+            self.ipList.insertRow(row_position)
+
+            is_main_button = QRadioButton()
+            self.main_button_group.addButton(is_main_button)
+
+            self.ipList.setCellWidget(row_position, 0, is_main_button)
+            self.ipList.setItem(row_position, 1, QTableWidgetItem(ip))
+            self.ipList.setItem(row_position, 2, QTableWidgetItem(alias))
+            is_main_button.setChecked(is_main)
+
+    def open_add_ip_window(self):
+        add_ip_window = AddIpWindow()
+        if add_ip_window.exec():
+            self.add_ip(add_ip_window.get_inputs())
+
+    def open_edit_ip_window(self):
+        edit_ip_window = AddIpWindow()
+        ip = self.ipList.item(self.ipList.currentRow(), 1).text()
+        alias = self.ipList.item(self.ipList.currentRow(), 2).text()
+        edit_ip_window.set_inputs(ip, alias)
+        if edit_ip_window.exec():
+            self.edit_ip(edit_ip_window.get_inputs())
+
+    def add_ip(self, inputs):
+        is_main = QRadioButton()
+        self.main_button_group.addButton(is_main)
+
+        row_position = self.ipList.rowCount()
+
+        if self.valid_ip(inputs[0]):
+            self.ipList.insertRow(row_position)
+            if self.ipList.rowCount() == 1:
+                is_main.setChecked(True)
+            self.ipList.setCellWidget(row_position, 0, is_main)
+            self.ipList.setItem(row_position, 1, QTableWidgetItem(inputs[0]))
+            self.ipList.setItem(row_position, 2, QTableWidgetItem(inputs[1]))
+        else:
+            self.show_validation_error()
+
+        self.save_data_to_file()
+
+    def edit_ip(self, inputs):
+        current_row = self.ipList.currentRow()
+        if self.valid_ip(inputs[0]):
+            self.ipList.setItem(current_row, 1, QTableWidgetItem(inputs[0]))
+            self.ipList.setItem(current_row, 2, QTableWidgetItem(inputs[1]))
+        else:
+            self.show_validation_error()
+        self.save_data_to_file()
+
+    def delete_ip(self):
+        selected = self.ipList.currentRow()
+        is_main = False
+        if self.ipList.cellWidget(selected, 0).isChecked():
+            is_main = True
+        if selected >= 0:
+            self.ipList.removeRow(selected)
+        if is_main and self.ipList.rowCount():
+            self.ipList.cellWidget(selected, 0).setChecked(True)
+        self.save_data_to_file()
+
+    def save_data_to_file(self):
+        data = []
+
+        for row in range(self.ipList.rowCount()):
+            ip = self.ipList.item(row, 1).text()
+            alias = self.ipList.item(row, 2).text()
+            is_main = self.ipList.cellWidget(row, 0).isChecked()
+
+            data.append({'IP': ip, 'Alias': alias, 'Main': is_main})
+
+        file_path = 'app/view/src/ip.json'
+        with open(file_path, 'w') as file:
+            json.dump(data, file, indent=2)
+
+    def show_validation_error(self):
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Ошибка")
+        msg_box.setIcon(QMessageBox.Critical)
+        msg_box.setText("Неверно введен IP-адрес")
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec_()
