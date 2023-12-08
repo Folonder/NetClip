@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Modal</class>
- <widget class="QWidget" name="Modal">
+ <class>IP-Manager</class>
+ <widget class="QWidget" name="IP-Manager">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>620</width>
+    <width>471</width>
     <height>401</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Modal</string>
+   <string>IP-Manager</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
@@ -21,36 +21,84 @@
        <layout class="QHBoxLayout" name="buttonsLayout">
         <item>
          <widget class="QPushButton" name="addButton">
+          <property name="font">
+           <font>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
           <property name="text">
-           <string>Добавить</string>
+           <string>➕</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="deleteButton">
+          <property name="font">
+           <font>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
           <property name="text">
-           <string>Удалить</string>
+           <string>➖</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="changeButton">
-          <property name="text">
-           <string>Редактировать</string>
+          <property name="font">
+           <font>
+            <pointsize>11</pointsize>
+           </font>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="markButton">
           <property name="text">
-           <string>Пометить главным</string>
+           <string>🖋️</string>
           </property>
          </widget>
         </item>
        </layout>
       </item>
       <item row="1" column="0">
-       <widget class="QListWidget" name="ipList"/>
+       <widget class="QTableWidget" name="ipList">
+        <property name="rowCount">
+         <number>0</number>
+        </property>
+        <property name="columnCount">
+         <number>3</number>
+        </property>
+        <attribute name="horizontalHeaderCascadingSectionResizes">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="horizontalHeaderDefaultSectionSize">
+         <number>120</number>
+        </attribute>
+        <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="horizontalHeaderStretchLastSection">
+         <bool>true</bool>
+        </attribute>
+        <attribute name="verticalHeaderCascadingSectionResizes">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderStretchLastSection">
+         <bool>false</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>Главный IP</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>IP-адрес</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Псевдоним</string>
+         </property>
+        </column>
+       </widget>
       </item>
      </layout>
     </widget>
